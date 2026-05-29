@@ -109,6 +109,25 @@ export async function loadSavedProgress() {
   const progress = await loadProgress(config.paths.progress);
   savedProgress = progress;
 
+  // Sync với DB thực tế — DB là source of truth
+  try {
+    if (!mongoClient) {
+      mongoClient = new MongoClient(config.mongo.uri, { maxPoolSize: 10 });
+      await mongoClient.connect();
+    }
+    const db = mongoClient.db(config.mongo.dbName);
+    const col = db.collection(config.mongo.collection);
+    const actualDbCount = await col.countDocuments();
+
+    if (actualDbCount > (progress.totalPlayersSynced || 0)) {
+      log(`📊 DB có ${actualDbCount} players, progress ghi ${progress.totalPlayersSynced || 0} → sync lại`);
+      progress.totalPlayersSynced = actualDbCount;
+      savedProgress = progress;
+    }
+  } catch (e) {
+    log(`⚠️  Không kết nối DB để sync count: ${e.message}`);
+  }
+
   // Cập nhật state để dashboard biết server đang ở đâu
   state.totalPlayers = progress.totalPlayersSynced || 0;
   state.totalNew = progress.totalNewPlayers || 0;
@@ -275,10 +294,35 @@ async function runScraper({
     state.estimatedPages = startPage;
   }
 
+  // ── Sync với DB thực tế ──
+  // Progress file có thể bị reset/stale, DB là source of truth
+  const actualDbCount = await col.countDocuments();
+  if (actualDbCount > progress.totalPlayersSynced) {
+    log(`📊 DB có ${actualDbCount} players, progress ghi ${progress.totalPlayersSynced} → sync lại`);
+    progress.totalPlayersSynced = actualDbCount;
+  }
+
+  // Khi resume mode ngược, tính estimatedPages và pagesCompleted đúng
+  if (reverse && startPage && !state.estimatedPages) {
+    // Detect last page nếu chưa có
+    state.currentPlayer = "Detecting last page...";
+    broadcast();
+    const lastPage = await detectLastPage(limit);
+    state.estimatedPages = lastPage;
+  }
+
+  // Tính pages đã hoàn thành trước session này
+  let previousPagesCompleted = 0;
+  if (reverse && state.estimatedPages && progress.lastCompletedPage > 0) {
+    previousPagesCompleted = state.estimatedPages - progress.lastCompletedPage;
+  } else if (!reverse && progress.lastCompletedPage > 0) {
+    previousPagesCompleted = progress.lastCompletedPage;
+  }
+
   // Reset session
   state.status = "running";
   state.startTime = Date.now();
-  state.pagesCompleted = 0;
+  state.pagesCompleted = previousPagesCompleted; // Bắt đầu từ số pages đã làm trước đó
   state.sessionPlayers = 0;
   state.sessionNew = 0;
   state.sessionUpdated = 0;
