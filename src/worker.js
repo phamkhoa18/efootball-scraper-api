@@ -311,12 +311,15 @@ async function runScraper({
     state.estimatedPages = lastPage;
   }
 
-  // Tính pages đã hoàn thành trước session này
-  let previousPagesCompleted = 0;
-  if (reverse && state.estimatedPages && progress.lastCompletedPage > 0) {
-    previousPagesCompleted = state.estimatedPages - progress.lastCompletedPage;
-  } else if (!reverse && progress.lastCompletedPage > 0) {
-    previousPagesCompleted = progress.lastCompletedPage;
+  // Tính pages đã hoàn thành — dùng DB count vì progress file có thể bị reset
+  let previousPagesCompleted = Math.round(actualDbCount / limit);
+  // Fallback: nếu không có DB count, dùng progress
+  if (previousPagesCompleted === 0) {
+    if (reverse && state.estimatedPages && progress.lastCompletedPage > 0) {
+      previousPagesCompleted = state.estimatedPages - progress.lastCompletedPage;
+    } else if (!reverse && progress.lastCompletedPage > 0) {
+      previousPagesCompleted = progress.lastCompletedPage;
+    }
   }
 
   // Reset session
