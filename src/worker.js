@@ -416,6 +416,33 @@ async function runScraper({
     emptyStreak = 0;
     state.playersOnPage = players.length;
 
+    // ── Smart Skip: kiểm tra xem page này đã có hết trong DB chưa ──
+    const efhubIds = players.map(p => String(p.id)).filter(Boolean);
+    const existingCount = efhubIds.length > 0
+      ? await col.countDocuments({ efhubId: { $in: efhubIds } })
+      : 0;
+
+    if (existingCount >= players.length) {
+      // Tất cả players đã có trong DB → SKIP page này
+      state.pagesCompleted += 1;
+      progress.lastCompletedPage = currentPage;
+      state.lastCompletedPage = currentPage;
+      state.sessionPlayers += players.length;
+      state.sessionUpdated += players.length;
+      progress.totalPlayersSynced = Math.max(progress.totalPlayersSynced, actualDbCount);
+      updateSpeed();
+      broadcast();
+
+      log(`   ⏭️  Page ${currentPage} — SKIP (${existingCount}/${players.length} đã có trong DB)`);
+
+      await saveProgress(config.paths.progress, progress);
+      page += reverse ? -1 : 1;
+      continue;
+    }
+
+    // Có players mới → xử lý bình thường
+    log(`   🆕 Page ${currentPage} — ${players.length - existingCount} mới cần xử lý`);
+
     let pN = 0,
       pU = 0,
       pI = 0;
