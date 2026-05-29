@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚽ eFootball Scraper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <style>
+      :root {
+        --blue-50: #eff6ff;
+        --blue-100: #dbeafe;
+        --blue-200: #bfdbfe;
+        --blue-300: #93c5fd;
+        --blue-400: #60a5fa;
+        --blue-500: #3b82f6;
+        --blue-600: #2563eb;
+        --blue-700: #1d4ed8;
+        --g50: #f9fafb;
+        --g100: #f3f4f6;
+        --g200: #e5e7eb;
+        --g300: #d1d5db;
+        --g400: #9ca3af;
+        --g500: #6b7280;
+        --g600: #4b5563;
+        --g700: #374151;
+        --g800: #1f2937;
+        --green-50: #f0fdf4;
+        --green-100: #dcfce7;
+        --green-500: #22c55e;
+        --green-600: #16a34a;
+        --amber-50: #fffbeb;
+        --amber-100: #fef3c7;
+        --amber-500: #f59e0b;
+        --red-50: #fef2f2;
+        --red-100: #fee2e2;
+        --red-500: #ef4444;
+        --r: 16px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background: var(--g50);
+        color: var(--g700);
+        font-size: 14px;
+        line-height: 1.6;
+        font-weight: 400;
+        min-height: 100vh;
+      }
+
+      .material-symbols-rounded {
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      /* ── Nav ── */
+      nav {
+        background: #fff;
+        border-bottom: 1px solid var(--g200);
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: 64px;
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        height: 100%;
+      }
+      .logo {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--g800);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: -0.02em;
+      }
+      .logo .material-symbols-rounded {
+        color: var(--blue-500);
+        font-size: 24px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        height: 100%;
+      }
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--g500);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+        height: 100%;
+      }
+      .nav-link:hover {
+        color: var(--g800);
+      }
+      .nav-link.active {
+        color: var(--blue-600);
+        border-bottom-color: var(--blue-500);
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 24px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .badge-running {
+        background: var(--blue-100);
+        color: var(--blue-700);
+      }
+      .badge-running::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--blue-500);
+        animation: pulse 1.5s infinite;
+      }
+      .badge-done {
+        background: var(--green-100);
+        color: var(--green-700);
+      }
+      .badge-paused {
+        background: var(--amber-100);
+        color: #b45309;
+      }
+      .badge-idle {
+        background: var(--g200);
+        color: var(--g600);
+      }
+      .badge-error {
+        background: var(--red-100);
+        color: var(--red-700);
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      /* ── Content ── */
+      .content {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      /* ── Controls ── */
+      .controls-card {
+        background: #fff;
+        border-radius: var(--r);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--g200);
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid var(--g300);
+        background: #fff;
+        color: var(--g700);
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:hover {
+        border-color: var(--g400);
+        background: var(--g50);
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-primary {
+        background: var(--blue-500);
+        color: #fff;
+        border-color: var(--blue-500);
+      }
+      .btn-primary:hover {
+        background: var(--blue-600);
+        border-color: var(--blue-600);
+      }
+      .btn-danger {
+        background: #fff;
+        color: var(--red-600);
+        border-color: var(--red-200);
+      }
+      .btn-danger:hover {
+        background: var(--red-50);
+        border-color: var(--red-300);
+      }
+
+      .input-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--g50);
+        padding: 6px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--g200);
+      }
+      .input-label {
+        font-size: 13px;
+        color: var(--g600);
+        font-weight: 500;
+      }
+      .input-sm {
+        padding: 4px 8px;
+        border: 1px solid var(--g300);
+        border-radius: 6px;
+        font-size: 14px;
+        width: 70px;
+        font-family: inherit;
+        color: var(--g800);
+        outline: none;
+        background: #fff;
+      }
+      .input-sm:focus {
+        border-color: var(--blue-400);
+      }
+      .checkbox-label {
+        font-size: 14px;
+        color: var(--g700);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .checkbox-label input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--blue-500);
+      }
+
+      /* ── Progress ── */
+      .progress-bar {
+        background: #fff;
+        border: 1px solid var(--g200);
+        border-radius: var(--r);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+      }
+      .progress-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .progress-player {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--g800);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .progress-player .material-symbols-rounded {
+        color: var(--blue-500);
+      }
+      .progress-meta {
+        display: flex;
+        gap: 24px;
+        font-size: 14px;
+        color: var(--g500);
+      }
+      .progress-meta strong {
+        font-weight: 600;
+        color: var(--g800);
+        font-size: 15px;
+      }
+      .track {
+        height: 8px;
+        background: var(--g100);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .track-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue-400), var(--blue-600));
+        border-radius: 4px;
+        transition: width 0.4s ease;
+      }
+
+      /* ── Speed ── */
+      .speed-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .speed-card {
+        background: #fff;
+        border: 1px solid var(--g200);
+        border-radius: var(--r);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+      }
+      .speed-val {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--blue-600);
+        letter-spacing: -0.02em;
+      }
+      .speed-label {
+        font-size: 12px;
+        color: var(--g500);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 4px;
+      }
+
+      /* ── Stats Grid ── */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat {
+        background: #fff;
+        border: 1px solid var(--g200);
+        border-radius: var(--r);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--g500);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .stat-label .material-symbols-rounded {
+        font-size: 16px;
+        opacity: 0.7;
+      }
+      .stat-val {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--g800);
+        margin: 8px 0;
+        letter-spacing: -0.03em;
+      }
+      .stat-sub {
+        font-size: 13px;
+        color: var(--g500);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .stat-sub span {
+        font-weight: 600;
+        color: var(--g700);
+      }
+      .stat.blue .stat-val {
+        color: var(--blue-600);
+      }
+      .stat.green .stat-val {
+        color: var(--green-600);
+      }
+      .stat.amber .stat-val {
+        color: var(--amber-600);
+      }
+
+      /* ── Tables ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--g200);
+        border-radius: var(--r);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        height: 400px;
+      }
+      .card-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--g200);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--g800);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--g50);
+      }
+      .table-container {
+        overflow-y: auto;
+        flex: 1;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        padding: 12px 20px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--g500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--g200);
+        position: sticky;
+        top: 0;
+        background: #fff;
+      }
+      td {
+        padding: 12px 20px;
+        font-size: 14px;
+        border-bottom: 1px solid var(--g100);
+        color: var(--g700);
+      }
+      tr:hover td {
+        background: var(--g50);
+      }
+      .tag {
+        display: inline-flex;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .tag-new {
+        background: var(--blue-100);
+        color: var(--blue-700);
+      }
+      .tag-upd {
+        background: var(--g200);
+        color: var(--g700);
+      }
+      .tag-err {
+        background: var(--red-100);
+        color: var(--red-700);
+      }
+      .empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--g500);
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      @media (max-width: 900px) {
+        .stats,
+        .speed-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+        .controls-card {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <div class="logo">
+          <span class="material-symbols-rounded">sports_soccer</span>
+          eFootball Scraper
+        </div>
+        <div class="nav-links">
+          <a href="/" class="nav-link active">
+            <span class="material-symbols-rounded">dashboard</span>
+            Dashboard
+          </a>
+          <a href="/docs" class="nav-link">
+            <span class="material-symbols-rounded">api</span>
+            API Docs
+          </a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <span
+          id="dbCount"
+          style="
+            font-size: 13px;
+            color: var(--g500);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          "
+        >
+          <span class="material-symbols-rounded" style="font-size: 18px"
+            >database</span
+          >
+          —
+        </span>
+        <div id="badge" class="badge badge-idle">Idle</div>
+      </div>
+    </nav>
+
+    <div class="content">
+      <!-- Controls -->
+      <div class="controls-card">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap">
+          <button class="btn btn-primary" id="btnStart" onclick="doStart()">
+            <span class="material-symbols-rounded">play_arrow</span> Start
+          </button>
+          <button
+            class="btn btn-danger"
+            id="btnStop"
+            onclick="doStop()"
+            disabled
+          >
+            <span class="material-symbols-rounded">stop</span> Stop
+          </button>
+          <button class="btn" id="btnResume" onclick="doResume()">
+            <span class="material-symbols-rounded">resume</span> Resume
+          </button>
+          <button class="btn" id="btnRetry" onclick="doRetry()">
+            <span class="material-symbols-rounded">replay</span> Retry Failed
+          </button>
+        </div>
+
+        <div
+          style="
+            width: 1px;
+            height: 32px;
+            background: var(--g200);
+            margin: 0 8px;
+          "
+        ></div>
+
+        <div
+          style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center"
+        >
+          <label
+            class="checkbox-label"
+            title="Cào từ page cuối ngược về page 1 (cũ nhất -> mới nhất)"
+          >
+            <input type="checkbox" id="inReverse" checked /> Cũ → Mới
+          </label>
+          <div class="input-group">
+            <span class="input-label">Page start</span>
+            <input
+              class="input-sm"
+              id="inStart"
+              type="number"
+              placeholder="auto"
+            />
+          </div>
+          <div class="input-group">
+            <span class="input-label">Page end</span>
+            <input
+              class="input-sm"
+              id="inEnd"
+              type="number"
+              placeholder="auto"
+            />
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="inSkipImg" /> Bỏ qua ảnh
+          </label>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar">
+        <div class="progress-top">
+          <div class="progress-player" id="curPlayer">
+            <span class="material-symbols-rounded" style="color: var(--g400)"
+              >person</span
+            >
+            Sẵn sàng bắt đầu
+          </div>
+          <div class="progress-meta">
+            <span>📄 Page <strong id="curPage">—</strong></span>
+            <span
+              >👤 <strong id="curIdx">0</strong> /
+              <span id="curTotal">0</span></span
+            >
+            <span>⚡ <strong id="curSpeed">0</strong> / min</span>
+          </div>
+        </div>
+        <div class="track">
+          <div class="track-fill" id="trackFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Speed -->
+      <div class="speed-row">
+        <div class="speed-card">
+          <div class="speed-val" id="elapsed">00:00</div>
+          <div class="speed-label">Thời gian</div>
+        </div>
+        <div class="speed-card">
+          <div class="speed-val" id="eta">—</div>
+          <div class="speed-label">Còn lại</div>
+        </div>
+        <div class="speed-card">
+          <div class="speed-val" id="pagesInfo">0 / ~432</div>
+          <div class="speed-label">Pages đã xong</div>
+        </div>
+        <div class="speed-card">
+          <div class="speed-val" id="errCount" style="color: var(--g500)">
+            0
+          </div>
+          <div class="speed-label">Pages lỗi</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat blue">
+          <div class="stat-label">
+            <span class="material-symbols-rounded">group</span> Tổng Players
+          </div>
+          <div class="stat-val" id="sTotal">0</div>
+          <div class="stat-sub">Phiên này: <span id="sSess">0</span></div>
+        </div>
+        <div class="stat green">
+          <div class="stat-label">
+            <span class="material-symbols-rounded">person_add</span> Mới
+          </div>
+          <div class="stat-val" id="sNew">0</div>
+          <div class="stat-sub">Phiên này: <span id="sSessN">0</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">
+            <span class="material-symbols-rounded">update</span> Cập nhật
+          </div>
+          <div class="stat-val" id="sUpd">0</div>
+          <div class="stat-sub">Phiên này: <span id="sSessU">0</span></div>
+        </div>
+        <div class="stat amber">
+          <div class="stat-label">
+            <span class="material-symbols-rounded">image</span> Ảnh đã tải
+          </div>
+          <div class="stat-val" id="sImg">0</div>
+          <div class="stat-sub">Phiên này: <span id="sSessI">0</span></div>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head">
+            <span
+              class="material-symbols-rounded"
+              style="color: var(--amber-500)"
+              >auto_awesome</span
+            >
+            Cầu thủ mới nhất
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tên</th>
+                  <th>OVR</th>
+                  <th>Vị trí</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="tRecent">
+                <tr>
+                  <td colspan="4" class="empty">
+                    <span
+                      class="material-symbols-rounded"
+                      style="font-size: 32px; opacity: 0.5; margin-bottom: 8px"
+                      >hourglass_empty</span
+                    >Chưa có dữ liệu
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <span class="material-symbols-rounded" style="color: var(--red-500)"
+              >error</span
+            >
+            Lỗi gần đây
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Page</th>
+                  <th>Chi tiết</th>
+                  <th>Thời gian</th>
+                </tr>
+              </thead>
+              <tbody id="tErrors">
+                <tr>
+                  <td colspan="3" class="empty">
+                    <span
+                      class="material-symbols-rounded"
+                      style="
+                        font-size: 32px;
+                        opacity: 0.5;
+                        margin-bottom: 8px;
+                        color: var(--green-500);
+                      "
+                      >check_circle</span
+                    >Không có lỗi
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      let S = {};
+
+      // ── SSE ──
+      function connect() {
+        const es = new EventSource("/events");
+        es.onmessage = (e) => {
+          S = JSON.parse(e.data);
+          render();
+        };
+        es.onerror = () => {
+          es.close();
+          setTimeout(connect, 3000);
+        };
+      }
+
+      // ── Actions ──
+      async function doStart() {
+        const body = {
+          startPage: $("inStart").value
+            ? Number($("inStart").value)
+            : undefined,
+          endPage: $("inEnd").value ? Number($("inEnd").value) : undefined,
+          skipImages: $("inSkipImg").checked,
+          reverse: $("inReverse").checked,
+        };
+        await fetch("/api/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      }
+      async function doStop() {
+        await fetch("/api/stop", { method: "POST" });
+      }
+      async function doResume() {
+        await fetch("/api/resume", { method: "POST" });
+      }
+      async function doRetry() {
+        await fetch("/api/retry", { method: "POST" });
+      }
+
+      // ── Render ──
+      function render() {
+        const s = S;
+        // Badge
+        const b = $("badge");
+        const map = {
+          idle: "Idle",
+          running: "Đang chạy",
+          stopping: "Đang dừng",
+          paused: "Tạm dừng",
+          done: "Hoàn tất",
+          error: "Lỗi",
+        };
+        b.className = "badge badge-" + (s.status || "idle");
+        b.textContent = map[s.status] || s.status;
+
+        // Buttons
+        const running = s.status === "running" || s.status === "stopping";
+        $("btnStart").disabled = running;
+        $("btnStop").disabled = !running;
+        $("btnResume").disabled = running;
+        $("btnRetry").disabled = running;
+        $("inStart").disabled = running;
+        $("inEnd").disabled = running;
+        $("inSkipImg").disabled = running;
+        $("inReverse").disabled = running;
+
+        // Progress
+        const dirText =
+          s.config && s.config.reverse !== false ? " (ngược)" : "";
+        $("curPlayer").innerHTML =
+          `<span class="material-symbols-rounded" style="color:var(--blue-500)">person</span> ${s.currentPlayer || "Sẵn sàng bắt đầu"}`;
+        $("curPage").textContent =
+          (s.currentPage || "—") + (s.currentPage ? dirText : "");
+        $("curIdx").textContent = s.playerIndex || 0;
+        $("curTotal").textContent = s.playersOnPage || 0;
+        $("curSpeed").textContent = s.playersPerMin || 0;
+
+        const pct =
+          s.pagesCompleted && s.estimatedPages
+            ? Math.min(100, (s.pagesCompleted / s.estimatedPages) * 100)
+            : 0;
+        $("trackFill").style.width = pct.toFixed(1) + "%";
+        $("pagesInfo").textContent =
+          `${s.pagesCompleted || 0} / ~${s.estimatedPages || 432}`;
+
+        $("errCount").textContent = s.failedPagesCount || 0;
+        if ((s.failedPagesCount || 0) > 0)
+          $("errCount").style.color = "var(--red-600)";
+        else $("errCount").style.color = "var(--g500)";
+
+        // Stats
+        $("sTotal").textContent = fmt(s.totalPlayers);
+        $("sNew").textContent = fmt(s.totalNew);
+        $("sUpd").textContent = fmt(s.totalUpdated);
+        $("sImg").textContent = fmt(s.totalImages);
+        $("sSess").textContent = fmt(s.sessionPlayers);
+        $("sSessN").textContent = fmt(s.sessionNew);
+        $("sSessU").textContent = fmt(s.sessionUpdated);
+        $("sSessI").textContent = fmt(s.sessionImages);
+
+        // Recent
+        const tb = $("tRecent");
+        if (s.recentPlayers && s.recentPlayers.length > 0) {
+          tb.innerHTML = s.recentPlayers
+            .slice(0, 15)
+            .map(
+              (p) => `<tr>
+      <td style="font-weight:600;color:var(--g800)">${esc(p.name)}</td>
+      <td style="font-family:monospace;font-size:13px">${p.overall}</td>
+      <td style="font-size:13px;color:var(--g500)">${esc(p.positions || "")}</td>
+      <td>${p.isNew ? '<span class="tag tag-new">MỚI</span>' : '<span class="tag tag-upd">UPD</span>'}</td>
+    </tr>`,
+            )
+            .join("");
+        }
+
+        // Errors
+        const eb = $("tErrors");
+        if (s.recentErrors && s.recentErrors.length > 0) {
+          eb.innerHTML = s.recentErrors
+            .map(
+              (e) => `<tr>
+      <td><span class="tag tag-err">Page ${e.page}</span></td>
+      <td>${esc(e.msg || "Failed")}</td>
+      <td style="font-size:12px;color:var(--g400)">${ago(e.time)}</td>
+    </tr>`,
+            )
+            .join("");
+        }
+      }
+
+      // Timer
+      setInterval(() => {
+        if (!S.startTime) return;
+        const el = Date.now() - S.startTime;
+        $("elapsed").textContent = dur(el);
+        if (
+          S.playersPerMin > 0 &&
+          S.pagesCompleted < (S.estimatedPages || 432)
+        ) {
+          const remPages = (S.estimatedPages || 432) - S.pagesCompleted;
+          const remMin = (remPages * 100) / S.playersPerMin;
+          $("eta").textContent = dur(remMin * 60000);
+        } else if (S.status === "done") {
+          $("eta").textContent = "✅";
+        }
+      }, 1000);
+
+      // DB count
+      setInterval(updateDb, 5000);
+      updateDb();
+      async function updateDb() {
+        try {
+          const r = await fetch("/api/stats");
+          const d = await r.json();
+          $("dbCount").innerHTML =
+            `<span class="material-symbols-rounded" style="font-size:18px">database</span> ${fmt(d.total)} players`;
+        } catch {}
+      }
+
+      function fmt(n) {
+        return (n || 0).toLocaleString("vi-VN");
+      }
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+      function dur(ms) {
+        const s = Math.floor(ms / 1000),
+          h = Math.floor(s / 3600),
+          m = Math.floor((s % 3600) / 60),
+          sec = s % 60;
+        return h > 0
+          ? `${h}h ${String(m).padStart(2, "0")}m`
+          : `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+      }
+      function ago(iso) {
+        if (!iso) return "";
+        const d = Math.floor((Date.now() - new Date(iso)) / 1000);
+        return d < 60 ? d + "s trước" : Math.floor(d / 60) + "m trước";
+      }
+
+      connect();
+    </script>
+  </body>
+</html>

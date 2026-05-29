@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Docs — eFootball Scraper</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --blue-50: #eff6ff;
+        --blue-100: #dbeafe;
+        --blue-200: #bfdbfe;
+        --blue-400: #60a5fa;
+        --blue-500: #3b82f6;
+        --blue-600: #2563eb;
+        --g50: #f9fafb;
+        --g100: #f3f4f6;
+        --g200: #e5e7eb;
+        --g300: #d1d5db;
+        --g400: #9ca3af;
+        --g500: #6b7280;
+        --g600: #4b5563;
+        --g700: #374151;
+        --g800: #1f2937;
+        --green-50: #f0fdf4;
+        --green-600: #16a34a;
+        --amber-50: #fffbeb;
+        --r: 10px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background: var(--g50);
+        color: var(--g700);
+        font-size: 13px;
+        line-height: 1.6;
+        font-weight: 400;
+      }
+
+      nav {
+        background: #fff;
+        border-bottom: 1px solid var(--g200);
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .logo {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--g800);
+        padding: 14px 16px 14px 0;
+        letter-spacing: -0.01em;
+        border-right: 1px solid var(--g100);
+      }
+      .logo span {
+        color: var(--blue-500);
+      }
+      .nav-links {
+        display: flex;
+      }
+      .nav-link {
+        padding: 14px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--g400);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .nav-link:hover {
+        color: var(--g700);
+      }
+      .nav-link.active {
+        color: var(--blue-600);
+        border-bottom-color: var(--blue-500);
+      }
+
+      .wrap {
+        display: flex;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .sidebar {
+        width: 200px;
+        padding: 20px 0;
+        position: sticky;
+        top: 48px;
+        height: calc(100vh - 48px);
+        overflow-y: auto;
+        border-right: 1px solid var(--g200);
+        flex-shrink: 0;
+      }
+      .sidebar a {
+        display: block;
+        padding: 5px 20px;
+        font-size: 12px;
+        color: var(--g500);
+        text-decoration: none;
+        font-weight: 400;
+        transition: all 0.1s;
+      }
+      .sidebar a:hover {
+        color: var(--blue-600);
+        background: var(--blue-50);
+      }
+      .sidebar a.active {
+        color: var(--blue-600);
+        font-weight: 500;
+        background: var(--blue-50);
+        border-right: 2px solid var(--blue-500);
+      }
+      .sidebar .section-title {
+        padding: 16px 20px 4px;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--g400);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .main {
+        flex: 1;
+        padding: 24px 32px;
+        min-width: 0;
+      }
+      h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--g800);
+        margin: 32px 0 12px;
+        letter-spacing: -0.02em;
+      }
+      h2:first-child {
+        margin-top: 0;
+      }
+      h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--g800);
+        margin: 24px 0 8px;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--g600);
+        font-weight: 400;
+      }
+      .intro {
+        font-size: 14px;
+        color: var(--g500);
+        margin-bottom: 24px;
+        font-weight: 300;
+      }
+
+      .endpoint {
+        background: #fff;
+        border: 1px solid var(--g200);
+        border-radius: var(--r);
+        margin: 12px 0 20px;
+        overflow: hidden;
+      }
+      .ep-header {
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid var(--g100);
+      }
+      .method {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+        letter-spacing: 0.02em;
+      }
+      .method-get {
+        background: var(--green-50);
+        color: var(--green-600);
+      }
+      .method-post {
+        background: var(--blue-50);
+        color: var(--blue-600);
+      }
+      .ep-path {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--g800);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .ep-desc {
+        font-size: 12px;
+        color: var(--g400);
+        margin-left: auto;
+      }
+      .ep-body {
+        padding: 14px 16px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+      }
+      th {
+        text-align: left;
+        padding: 6px 12px;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--g400);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: var(--g50);
+        border-bottom: 1px solid var(--g200);
+      }
+      td {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--g100);
+        color: var(--g600);
+      }
+      td code {
+        background: var(--g100);
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--g700);
+      }
+
+      pre {
+        background: var(--g800);
+        color: #e5e7eb;
+        padding: 14px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", monospace;
+        margin: 8px 0;
+      }
+      pre .key {
+        color: #93c5fd;
+      }
+      pre .str {
+        color: #86efac;
+      }
+      pre .num {
+        color: #fbbf24;
+      }
+      pre .comment {
+        color: #6b7280;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+      }
+      .tag-required {
+        background: var(--blue-100);
+        color: var(--blue-600);
+      }
+      .tag-optional {
+        background: var(--g100);
+        color: var(--g500);
+      }
+
+      .try-btn {
+        padding: 5px 12px;
+        border: 1px solid var(--blue-200);
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        background: var(--blue-50);
+        color: var(--blue-600);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s;
+      }
+      .try-btn:hover {
+        background: var(--blue-100);
+      }
+      .result-box {
+        background: var(--g800);
+        color: #e5e7eb;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        margin-top: 8px;
+        max-height: 300px;
+        overflow: auto;
+        display: none;
+        white-space: pre-wrap;
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--g200);
+        margin: 24px 0;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <div class="logo">⚽ <span>eFootball</span> Scraper</div>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Dashboard</a>
+          <a href="/docs" class="nav-link active">API Docs</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="wrap">
+      <div class="sidebar">
+        <div class="section-title">Tổng quan</div>
+        <a href="#intro">Giới thiệu</a>
+        <a href="#source">Nguồn dữ liệu</a>
+        <div class="section-title">Scraper Control</div>
+        <a href="#start">POST /api/start</a>
+        <a href="#stop">POST /api/stop</a>
+        <a href="#resume">POST /api/resume</a>
+        <a href="#retry">POST /api/retry</a>
+        <a href="#state">GET /api/state</a>
+        <div class="section-title">Data API</div>
+        <a href="#players">GET /api/players</a>
+        <a href="#player-detail">GET /api/players/:id</a>
+        <a href="#stats">GET /api/stats</a>
+        <div class="section-title">Real-time</div>
+        <a href="#sse">SSE /events</a>
+        <div class="section-title">Schema</div>
+        <a href="#schema">Player Document</a>
+      </div>
+
+      <div class="main">
+        <h2 id="intro">eFootball Scraper API</h2>
+        <p class="intro">
+          API nội bộ để điều khiển scraper và truy vấn dữ liệu cầu thủ eFootball
+          đã cào. Tất cả data được lấy từ eFootbase API và lưu vào MongoDB
+          riêng.
+        </p>
+
+        <p><strong>Base URL:</strong> <code>http://localhost:4000</code></p>
+        <p>
+          <strong>Database:</strong> <code>efootball_scraper</code> (MongoDB)
+        </p>
+        <p><strong>Tổng cầu thủ:</strong> ~43,000 (432 pages × 100)</p>
+
+        <div class="divider"></div>
+
+        <h2 id="source">Nguồn dữ liệu gốc</h2>
+        <p>
+          Data được cào từ <strong>eFootbase API</strong> — API nội bộ của ứng
+          dụng eFootbase (Dart/Flutter). Không có tài liệu chính thức.
+        </p>
+
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">https://api2.efootbase.com/api/players</span>
+            <span class="ep-desc">API gốc</span>
+          </div>
+          <div class="ep-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Header</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>x-api-key</code></td>
+                  <td>
+                    <code
+                      >L-}i@R-KwsGk&amp;nB;C4)RBSB+_AQsTSK5Sxa&amp;d:&gt;oz54</code
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>User-Agent</code></td>
+                  <td><code>Dart/3.3 (dart:io)</code></td>
+                </tr>
+              </tbody>
+            </table>
+            <table>
+              <thead>
+                <tr>
+                  <th>Param</th>
+                  <th>Mô tả</th>
+                  <th>Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>limit</code></td>
+                  <td>Số cầu thủ/trang (max 100)</td>
+                  <td>50</td>
+                </tr>
+                <tr>
+                  <td><code>page</code></td>
+                  <td>Số trang</td>
+                  <td>1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Scraper Control ── -->
+        <h2>Scraper Control</h2>
+
+        <h3 id="start">Bắt đầu cào</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-post">POST</span>
+            <span class="ep-path">/api/start</span>
+            <span class="ep-desc">Bắt đầu scraper</span>
+          </div>
+          <div class="ep-body">
+            <p>Body (JSON):</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Type</th>
+                  <th>Mô tả</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>startPage</code></td>
+                  <td>number</td>
+                  <td>Trang bắt đầu</td>
+                  <td><span class="tag tag-optional">optional</span></td>
+                </tr>
+                <tr>
+                  <td><code>endPage</code></td>
+                  <td>number</td>
+                  <td>Trang kết thúc</td>
+                  <td><span class="tag tag-optional">optional</span></td>
+                </tr>
+                <tr>
+                  <td><code>limit</code></td>
+                  <td>number</td>
+                  <td>Cầu thủ/trang (max 100)</td>
+                  <td><span class="tag tag-optional">optional</span></td>
+                </tr>
+                <tr>
+                  <td><code>skipImages</code></td>
+                  <td>boolean</td>
+                  <td>Bỏ qua tải ảnh</td>
+                  <td><span class="tag tag-optional">optional</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <button
+              class="try-btn"
+              onclick="
+                tryIt('/api/start', 'POST', { startPage: 1, endPage: 2 })
+              "
+            >
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-start"></div>
+          </div>
+        </div>
+
+        <h3 id="stop">Dừng scraper</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-post">POST</span>
+            <span class="ep-path">/api/stop</span>
+            <span class="ep-desc">Dừng scraper đang chạy</span>
+          </div>
+          <div class="ep-body">
+            <p>
+              Không cần body. Scraper sẽ dừng sau khi xong cầu thủ hiện tại và
+              lưu progress.
+            </p>
+            <button class="try-btn" onclick="tryIt('/api/stop', 'POST')">
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-stop"></div>
+          </div>
+        </div>
+
+        <h3 id="resume">Tiếp tục từ lần trước</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-post">POST</span>
+            <span class="ep-path">/api/resume</span>
+          </div>
+          <div class="ep-body">
+            <p>Tiếp tục cào từ page cuối đã hoàn thành.</p>
+            <button class="try-btn" onclick="tryIt('/api/resume', 'POST')">
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-resume"></div>
+          </div>
+        </div>
+
+        <h3 id="retry">Cào lại page lỗi</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-post">POST</span>
+            <span class="ep-path">/api/retry</span>
+          </div>
+          <div class="ep-body">
+            <p>Cào lại các page bị lỗi từ lần chạy trước.</p>
+            <button class="try-btn" onclick="tryIt('/api/retry', 'POST')">
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-retry"></div>
+          </div>
+        </div>
+
+        <h3 id="state">Trạng thái hiện tại</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">/api/state</span>
+          </div>
+          <div class="ep-body">
+            <p>
+              Trả về toàn bộ trạng thái scraper: status, page hiện tại,
+              counters, recent players...
+            </p>
+            <button class="try-btn" onclick="tryIt('/api/state', 'GET')">
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-state"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Data API ── -->
+        <h2>Data API</h2>
+
+        <h3 id="players">Danh sách cầu thủ</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">/api/players</span>
+            <span class="ep-desc">Phân trang + tìm kiếm</span>
+          </div>
+          <div class="ep-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Param</th>
+                  <th>Type</th>
+                  <th>Mô tả</th>
+                  <th>Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>page</code></td>
+                  <td>number</td>
+                  <td>Trang</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td><code>limit</code></td>
+                  <td>number</td>
+                  <td>Số kết quả/trang</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td><code>search</code></td>
+                  <td>string</td>
+                  <td>Tìm theo tên (regex)</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><code>sort</code></td>
+                  <td>string</td>
+                  <td>Sắp xếp theo field</td>
+                  <td>overall.max</td>
+                </tr>
+              </tbody>
+            </table>
+            <button
+              class="try-btn"
+              onclick="tryIt('/api/players?limit=3', 'GET')"
+            >
+              ▶ Try it (3 players)
+            </button>
+            <div class="result-box" id="res-players"></div>
+          </div>
+        </div>
+
+        <h3 id="player-detail">Chi tiết cầu thủ</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">/api/players/:efhubId</span>
+          </div>
+          <div class="ep-body">
+            <p>Trả về toàn bộ thông tin 1 cầu thủ theo efhubId.</p>
+            <button
+              class="try-btn"
+              onclick="tryIt('/api/players/89136409091415', 'GET')"
+            >
+              ▶ Try Messi
+            </button>
+            <div class="result-box" id="res-player-detail"></div>
+          </div>
+        </div>
+
+        <h3 id="stats">Thống kê DB</h3>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">/api/stats</span>
+          </div>
+          <div class="ep-body">
+            <p>Tổng số cầu thủ, OVR trung bình, OVR cao nhất.</p>
+            <button class="try-btn" onclick="tryIt('/api/stats', 'GET')">
+              ▶ Try it
+            </button>
+            <div class="result-box" id="res-stats"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 id="sse">Real-time SSE</h2>
+        <div class="endpoint">
+          <div class="ep-header">
+            <span class="method method-get">GET</span>
+            <span class="ep-path">/events</span>
+            <span class="ep-desc">Server-Sent Events</span>
+          </div>
+          <div class="ep-body">
+            <p>
+              Stream real-time trạng thái scraper. Dùng
+              <code>EventSource</code> trong JavaScript:
+            </p>
+            <pre><span class="key">const</span> es = <span class="key">new</span> EventSource(<span class="str">'/events'</span>);
+es.onmessage = (event) => {
+  <span class="key">const</span> state = JSON.parse(event.data);
+  console.log(state.currentPlayer, state.totalPlayers);
+};</pre>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 id="schema">Player Document Schema</h2>
+        <p>Cấu trúc document MongoDB cho mỗi cầu thủ:</p>
+        <pre>{
+  <span class="key">"efhubId"</span>: <span class="str">"89136409091415"</span>,
+  <span class="key">"name"</span>: <span class="str">"Lionel Messi"</span>,
+  <span class="key">"nameNormalized"</span>: <span class="str">"lionel messi"</span>,
+  <span class="key">"nameJa"</span>: <span class="str">"リオネル メッシ"</span>,
+  <span class="key">"nationality"</span>: <span class="str">"Argentina"</span>,
+  <span class="key">"club"</span>: <span class="str">"FC Barcelona"</span>,
+  <span class="key">"age"</span>: <span class="num">19</span>,
+  <span class="key">"height"</span>: <span class="num">170</span>,
+  <span class="key">"weight"</span>: <span class="num">67</span>,
+  <span class="key">"foot"</span>: <span class="str">"Left"</span>,
+  <span class="key">"positions"</span>: [<span class="str">"CF"</span>, <span class="str">"SS"</span>, <span class="str">"RWF"</span>, <span class="str">"AMF"</span>],
+  <span class="key">"overall"</span>: { <span class="key">"base"</span>: <span class="num">89</span>, <span class="key">"max"</span>: <span class="num">105</span> },
+  <span class="key">"levels"</span>: { <span class="key">"current"</span>: <span class="num">1</span>, <span class="key">"max"</span>: <span class="num">34</span> },
+  <span class="key">"stats"</span>: {
+    <span class="key">"level1"</span>: {
+      <span class="key">"offensiveAwareness"</span>: <span class="num">79</span>,
+      <span class="key">"dribbling"</span>: <span class="num">83</span>,
+      <span class="key">"speed"</span>: <span class="num">78</span>,
+      <span class="comment">// ... 26 chỉ số tổng cộng</span>
+    },
+    <span class="key">"maxLevel"</span>: {
+      <span class="key">"dribbling"</span>: <span class="num">104</span>,
+      <span class="key">"speed"</span>: <span class="num">104</span>,
+      <span class="comment">// ... stats ở max level</span>
+    }
+  },
+  <span class="key">"skills"</span>: [<span class="str">"Double Touch"</span>, <span class="str">"One-touch Pass"</span>, ...],
+  <span class="key">"playstyles"</span>: [<span class="str">"Creative Playmaker"</span>],
+  <span class="key">"playstylePassives"</span>: [<span class="str">"Mazing Run"</span>, <span class="str">"Trickster"</span>],
+  <span class="key">"booster"</span>: { <span class="key">"name"</span>: <span class="str">"Booster +5"</span>, <span class="key">"stats"</span>: {...} },
+  <span class="key">"condition"</span>: { <span class="key">"form"</span>: <span class="str">"A"</span>, <span class="key">"injuryResistance"</span>: <span class="num">1</span> },
+  <span class="key">"weakFoot"</span>: { <span class="key">"accuracy"</span>: <span class="num">2</span>, <span class="key">"usage"</span>: <span class="num">1</span> },
+  <span class="key">"images"</span>: {
+    <span class="key">"transparent"</span>: <span class="str">"data/images/players/89136409091415.png"</span>,
+    <span class="key">"cardFront"</span>: <span class="str">"data/images/cards/89136409091415/front.png"</span>,
+    <span class="comment">// ... back, mobile, dynamic</span>
+  },
+  <span class="key">"emblems"</span>: {
+    <span class="key">"nationality"</span>: <span class="str">"data/images/emblems/xxx.png"</span>,
+    <span class="key">"league"</span>: <span class="str">"data/images/emblems/xxx.png"</span>,
+    <span class="key">"team"</span>: <span class="str">"data/images/emblems/xxx.png"</span>
+  },
+  <span class="key">"originalUrls"</span>: { <span class="comment">// URL gốc từ API</span> },
+  <span class="key">"timeAdded"</span>: <span class="str">"2024-12-04T00:00:00.000Z"</span>,
+  <span class="key">"source"</span>: <span class="str">"efootbase.com"</span>,
+  <span class="key">"scrapedAt"</span>: <span class="str">"2026-05-29T06:00:00.000Z"</span>
+}</pre>
+      </div>
+    </div>
+
+    <script>
+      async function tryIt(url, method, body) {
+        const id =
+          "res-" + url.split("/api/")[1]?.split("?")[0]?.replace(/\//g, "-") ||
+          "unknown";
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.style.display = "block";
+        box.textContent = "Loading...";
+        try {
+          const opts = { method };
+          if (body) {
+            opts.headers = { "Content-Type": "application/json" };
+            opts.body = JSON.stringify(body);
+          }
+          const res = await fetch(url, opts);
+          const data = await res.json();
+          box.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          box.textContent = "Error: " + e.message;
+        }
+      }
+    </script>
+  </body>
+</html>

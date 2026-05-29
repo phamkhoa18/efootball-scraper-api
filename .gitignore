@@ -1,0 +1,7 @@
+node_modules/
+data/images/
+data/sync-progress.json
+data/export-*.json
+logs/
+.env
+.DS_Store

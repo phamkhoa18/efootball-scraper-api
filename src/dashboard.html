@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚽ eFootball Scraper Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --blue-50: #eff6ff;
+        --blue-100: #dbeafe;
+        --blue-200: #bfdbfe;
+        --blue-300: #93c5fd;
+        --blue-400: #60a5fa;
+        --blue-500: #3b82f6;
+        --blue-600: #2563eb;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --green-500: #22c55e;
+        --green-100: #dcfce7;
+        --amber-500: #f59e0b;
+        --amber-100: #fef3c7;
+        --red-500: #ef4444;
+        --red-100: #fee2e2;
+        --radius: 12px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md:
+          0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-700);
+        font-weight: 400;
+        font-size: 13px;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      /* ── Header ── */
+      .header {
+        background: white;
+        border-bottom: 1px solid var(--gray-200);
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header h1 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--gray-800);
+        letter-spacing: -0.01em;
+      }
+
+      .header h1 span {
+        color: var(--blue-500);
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .status-running {
+        background: var(--blue-100);
+        color: var(--blue-600);
+      }
+      .status-running::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--blue-500);
+        animation: pulse 1.5s infinite;
+      }
+      .status-done {
+        background: var(--green-100);
+        color: #16a34a;
+      }
+      .status-paused {
+        background: var(--amber-100);
+        color: #d97706;
+      }
+      .status-error {
+        background: var(--red-100);
+        color: var(--red-500);
+      }
+      .status-idle {
+        background: var(--gray-100);
+        color: var(--gray-500);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      /* ── Content ── */
+      .content {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* ── Current Progress ── */
+      .current-bar {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .current-bar .label {
+        font-size: 11px;
+        color: var(--gray-400);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+      }
+
+      .current-bar .player-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--gray-800);
+      }
+
+      .current-bar .meta {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+
+      .progress-track {
+        margin-top: 10px;
+        height: 4px;
+        background: var(--gray-100);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue-400), var(--blue-500));
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      /* ── Stat Cards ── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .stat-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .stat-card .stat-label {
+        font-size: 11px;
+        color: var(--gray-400);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .stat-card .stat-value {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-top: 4px;
+        letter-spacing: -0.02em;
+      }
+
+      .stat-card .stat-sub {
+        font-size: 11px;
+        color: var(--gray-400);
+        margin-top: 2px;
+      }
+
+      .stat-card.blue .stat-value {
+        color: var(--blue-600);
+      }
+      .stat-card.green .stat-value {
+        color: #16a34a;
+      }
+      .stat-card.amber .stat-value {
+        color: #d97706;
+      }
+
+      /* ── Two Column Layout ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      /* ── Table Card ── */
+      .table-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+      }
+
+      .table-card .card-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--gray-100);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--gray-700);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .table-card table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .table-card th {
+        text-align: left;
+        padding: 8px 16px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--gray-400);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .table-card td {
+        padding: 7px 16px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--gray-50);
+        color: var(--gray-600);
+      }
+
+      .table-card tr:last-child td {
+        border-bottom: none;
+      }
+
+      .table-card tbody {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .badge-new {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--blue-100);
+        color: var(--blue-600);
+      }
+
+      .badge-update {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--gray-100);
+        color: var(--gray-500);
+      }
+
+      .badge-error {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--red-100);
+        color: var(--red-500);
+      }
+
+      .empty-state {
+        padding: 24px;
+        text-align: center;
+        color: var(--gray-400);
+        font-size: 12px;
+      }
+
+      /* ── Speed & ETA ── */
+      .speed-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .speed-item {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+      }
+
+      .speed-item .speed-val {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--blue-600);
+      }
+
+      .speed-item .speed-label {
+        font-size: 10px;
+        color: var(--gray-400);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 2px;
+      }
+
+      .time-display {
+        font-size: 12px;
+        color: var(--gray-400);
+        font-weight: 400;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+        .speed-bar {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .content {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>⚽ <span>eFootball</span> Scraper</h1>
+      </div>
+      <div id="statusBadge" class="status-badge status-idle">Idle</div>
+    </div>
+
+    <div class="content">
+      <!-- Current Progress Bar -->
+      <div class="current-bar">
+        <div class="label">Đang xử lý</div>
+        <div class="player-name" id="currentPlayer">Đang chờ...</div>
+        <div class="meta">
+          <span>📄 Page <strong id="currentPage">—</strong></span>
+          <span
+            >👤 <span id="playerIndex">0</span> /
+            <span id="playersOnPage">0</span></span
+          >
+          <span>⚡ <span id="speed">0</span> players/min</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Speed & ETA -->
+      <div class="speed-bar">
+        <div class="speed-item">
+          <div class="speed-val" id="elapsed">00:00</div>
+          <div class="speed-label">Thời gian chạy</div>
+        </div>
+        <div class="speed-item">
+          <div class="speed-val" id="eta">—</div>
+          <div class="speed-label">Ước tính còn lại</div>
+        </div>
+        <div class="speed-item">
+          <div class="speed-val" id="pagesProgress">0 / ~432</div>
+          <div class="speed-label">Trang hoàn thành</div>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Tổng Players</div>
+          <div class="stat-value" id="totalPlayers">0</div>
+          <div class="stat-sub">phiên: <span id="sessionPlayers">0</span></div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Mới thêm</div>
+          <div class="stat-value" id="totalNew">0</div>
+          <div class="stat-sub">phiên: <span id="sessionNew">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cập nhật</div>
+          <div class="stat-value" id="totalUpdated">0</div>
+          <div class="stat-sub">phiên: <span id="sessionUpdated">0</span></div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Ảnh tải</div>
+          <div class="stat-value" id="totalImages">0</div>
+          <div class="stat-sub">phiên: <span id="sessionImages">0</span></div>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div class="two-col">
+        <!-- Recent Players -->
+        <div class="table-card">
+          <div class="card-header">✨ Cầu thủ gần đây</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tên</th>
+                <th>OVR</th>
+                <th>CLB</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="recentPlayersBody">
+              <tr>
+                <td colspan="4" class="empty-state">Đang chờ dữ liệu...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Errors -->
+        <div class="table-card">
+          <div class="card-header">⚠️ Lỗi gần đây</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Loại</th>
+                <th>Chi tiết</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody id="errorsBody">
+              <tr>
+                <td colspan="3" class="empty-state">Không có lỗi 🎉</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      let state = {};
+      let startTime = null;
+
+      // ── SSE Connection ──
+      function connect() {
+        const evtSource = new EventSource("/events");
+
+        evtSource.onmessage = (event) => {
+          state = JSON.parse(event.data);
+          if (!startTime && state.startTime) startTime = state.startTime;
+          render();
+        };
+
+        evtSource.onerror = () => {
+          evtSource.close();
+          setTimeout(connect, 3000);
+        };
+      }
+
+      // ── Render ──
+      function render() {
+        // Status badge
+        const badge = $("statusBadge");
+        badge.className = "status-badge status-" + (state.status || "idle");
+        const statusText = {
+          idle: "Idle",
+          running: "Đang chạy",
+          paused: "Tạm dừng",
+          done: "Hoàn tất",
+          error: "Lỗi",
+        };
+        badge.textContent = statusText[state.status] || state.status;
+
+        // Current
+        $("currentPlayer").textContent = state.currentPlayer || "Đang chờ...";
+        $("currentPage").textContent = state.currentPage || "—";
+        $("playerIndex").textContent = state.playerIndex || 0;
+        $("playersOnPage").textContent = state.playersOnPage || 0;
+        $("speed").textContent = state.playersPerMin || 0;
+
+        // Progress bar
+        const pagePercent = state.lastCompletedPage
+          ? Math.min(
+              100,
+              (state.lastCompletedPage / state.estimatedPages) * 100,
+            )
+          : 0;
+        $("progressFill").style.width = pagePercent.toFixed(1) + "%";
+
+        // Pages
+        $("pagesProgress").textContent =
+          `${state.lastCompletedPage || 0} / ~${state.estimatedPages || 432}`;
+
+        // Stats
+        $("totalPlayers").textContent = fmt(state.totalPlayers);
+        $("totalNew").textContent = fmt(state.totalNew);
+        $("totalUpdated").textContent = fmt(state.totalUpdated);
+        $("totalImages").textContent = fmt(state.totalImages);
+        $("sessionPlayers").textContent = fmt(state.sessionPlayers);
+        $("sessionNew").textContent = fmt(state.sessionNew);
+        $("sessionUpdated").textContent = fmt(state.sessionUpdated);
+        $("sessionImages").textContent = fmt(state.sessionImages);
+
+        // Recent players
+        const tbody = $("recentPlayersBody");
+        if (state.recentPlayers && state.recentPlayers.length > 0) {
+          tbody.innerHTML = state.recentPlayers
+            .slice(0, 12)
+            .map(
+              (p) => `
+          <tr>
+            <td style="font-weight:500;color:var(--gray-800)">${esc(p.name)}</td>
+            <td>${p.overall}</td>
+            <td>${esc(p.club)}</td>
+            <td>${
+              p.isNew
+                ? '<span class="badge-new">MỚI</span>'
+                : '<span class="badge-update">CẬP NHẬT</span>'
+            }</td>
+          </tr>
+        `,
+            )
+            .join("");
+        }
+
+        // Errors
+        const errBody = $("errorsBody");
+        if (state.recentErrors && state.recentErrors.length > 0) {
+          errBody.innerHTML = state.recentErrors
+            .map(
+              (e) => `
+          <tr>
+            <td><span class="badge-error">Page ${e.page}</span></td>
+            <td>Fetch failed</td>
+            <td class="time-display">${timeAgo(e.time)}</td>
+          </tr>
+        `,
+            )
+            .join("");
+        } else if (state.failedPagesCount > 0) {
+          errBody.innerHTML = `<tr><td colspan="3" class="empty-state">${state.failedPagesCount} pages lỗi</td></tr>`;
+        }
+      }
+
+      // ── Elapsed & ETA timer ──
+      setInterval(() => {
+        if (!startTime) return;
+        const elapsed = Date.now() - startTime;
+        $("elapsed").textContent = formatDuration(elapsed);
+
+        if (
+          state.playersPerMin > 0 &&
+          state.lastCompletedPage < state.estimatedPages
+        ) {
+          const remainPages =
+            state.estimatedPages - (state.lastCompletedPage || 0);
+          const remainPlayers = remainPages * 100;
+          const remainMin = remainPlayers / state.playersPerMin;
+          $("eta").textContent = formatDuration(remainMin * 60000);
+        } else if (state.status === "done") {
+          $("eta").textContent = "✅ Xong";
+        }
+      }, 1000);
+
+      // ── Helpers ──
+      function fmt(n) {
+        return (n || 0).toLocaleString("vi-VN");
+      }
+
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+
+      function formatDuration(ms) {
+        const s = Math.floor(ms / 1000);
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}m`;
+        return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+      }
+
+      function timeAgo(iso) {
+        if (!iso) return "";
+        const diff = Date.now() - new Date(iso).getTime();
+        const sec = Math.floor(diff / 1000);
+        if (sec < 60) return sec + "s ago";
+        return Math.floor(sec / 60) + "m ago";
+      }
+
+      // ── Init ──
+      connect();
+    </script>
+  </body>
+</html>
