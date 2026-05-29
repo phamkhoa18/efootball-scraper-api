@@ -24,7 +24,7 @@ import { mapPlayer } from "./mapper.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const DASHBOARD_PORT = 4000;
+const DASHBOARD_PORT = config.dashboard.port;
 
 // ── SSE clients ──
 const sseClients = new Set();

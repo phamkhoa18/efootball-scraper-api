@@ -1,6 +1,8 @@
 /**
  * ─── eFootball Scraper Config ───────────────────────────────────
  */
+import "dotenv/config";
+
 export default {
   // ── API ──
   api: {
@@ -51,7 +53,7 @@ export default {
 
   // ── Dashboard ──
   dashboard: {
-    port: 4000,
+    port: process.env.PORT || 4000,
   },
 
   // ── Mapping ──
