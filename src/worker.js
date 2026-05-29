@@ -10,6 +10,8 @@ import { loadProgress, saveProgress, resetProgress } from "./progress.js";
 import { downloadAllImages } from "./downloader.js";
 import { mapPlayer } from "./mapper.js";
 
+let savedProgress = null;
+
 // ── Live State (shared with server) ──
 export const state = {
   status: "idle",
@@ -99,6 +101,41 @@ export function isRunning() {
   return state.status === "running";
 }
 
+/**
+ * Load progress đã lưu và cập nhật state để dashboard hiển thị
+ * ngay khi server khởi động (trước khi user bấm Resume).
+ */
+export async function loadSavedProgress() {
+  const progress = await loadProgress(config.paths.progress);
+  savedProgress = progress;
+
+  // Cập nhật state để dashboard biết server đang ở đâu
+  state.totalPlayers = progress.totalPlayersSynced || 0;
+  state.totalNew = progress.totalNewPlayers || 0;
+  state.totalUpdated = progress.totalUpdatedPlayers || 0;
+  state.totalImages = progress.totalImagesDownloaded || 0;
+  state.lastCompletedPage = progress.lastCompletedPage || 0;
+  state.failedPagesCount = (progress.failedPages || []).length;
+  state.direction = progress.direction === "reverse" ? "old-to-new" : "new-to-old";
+
+  // Nếu đã có progress nhưng chưa finish → set status = paused
+  if (progress.lastCompletedPage > 0 && !progress.finishedAt) {
+    state.status = "paused";
+  } else if (progress.lastCompletedPage > 0 && progress.finishedAt) {
+    state.status = "done";
+  }
+
+  log(`📂 Progress đã lưu: page ${progress.lastCompletedPage}, ${progress.totalPlayersSynced} players, direction: ${progress.direction || "forward"}`);
+  return progress;
+}
+
+/**
+ * Lấy progress info hiện tại (cho API /api/progress)
+ */
+export function getProgressInfo() {
+  return savedProgress;
+}
+
 export async function stop() {
   if (state.status !== "running") return;
   stopRequested = true;
@@ -145,6 +182,10 @@ export async function start(opts = {}) {
     endPage = opts.endPage || null;
 
   if (opts.resume) {
+    // ── RESUME: Tiếp tục từ chỗ đã dừng ──
+    if (progress.lastCompletedPage === 0) {
+      return { error: "Không có progress để resume. Hãy bấm Start." };
+    }
     if (progress.direction === "reverse") {
       startPage = progress.lastCompletedPage - 1;
       log(`📂 Resume (ngược) từ page ${startPage}`);
@@ -156,6 +197,20 @@ export async function start(opts = {}) {
     startPage = null;
     log(`🔄 Retry ${progress.failedPages.length} failed pages`);
   } else {
+    // ── START MỚI ──
+    // Bảo vệ: nếu đã có > 1000 players, yêu cầu confirm (qua opts.forceReset)
+    if (
+      !opts.forceReset &&
+      !opts.startPage &&
+      progress.totalPlayersSynced > 1000
+    ) {
+      return {
+        error: "confirm_reset",
+        message: `Đã có ${progress.totalPlayersSynced.toLocaleString()} players (page ${progress.lastCompletedPage}). Bấm Resume để tiếp tục, hoặc xác nhận Start mới sẽ reset progress.`,
+        totalPlayers: progress.totalPlayersSynced,
+        lastPage: progress.lastCompletedPage,
+      };
+    }
     startPage = opts.startPage || null; // will be detected
     if (!opts.resume && !opts.startPage) progress = resetProgress();
     progress.direction = reverse ? "reverse" : "forward";

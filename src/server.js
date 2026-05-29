@@ -22,6 +22,8 @@ import {
   getDbStats,
   getPlayers,
   getPlayer,
+  loadSavedProgress,
+  getProgressInfo,
 } from "./worker.js";
 import { log } from "./logger.js";
 import config from "../config/default.js";
@@ -135,6 +137,7 @@ const server = http.createServer(async (req, res) => {
       limit: body.limit ? Number(body.limit) : undefined,
       skipImages: body.skipImages || false,
       reverse: body.reverse !== false, // default true
+      forceReset: body.forceReset || false,
     });
     return json(res, result);
   }
@@ -152,6 +155,11 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === "/api/retry" && method === "POST") {
     const result = await start({ retryFailed: true });
     return json(res, result);
+  }
+
+  if (urlPath === "/api/progress" && method === "GET") {
+    const progress = getProgressInfo();
+    return json(res, progress || { lastCompletedPage: 0, totalPlayersSynced: 0 });
   }
 
   if (urlPath === "/api/stats" && method === "GET") {
@@ -210,7 +218,7 @@ const server = http.createServer(async (req, res) => {
   json(res, { error: "Not found" }, 404);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   log("");
   log("══════════════════════════════════════════════════════");
   log("  ⚽ eFootball Scraper Server");
@@ -219,4 +227,17 @@ server.listen(PORT, () => {
   log(`  💾 Database:   ${config.mongo.dbName}`);
   log("══════════════════════════════════════════════════════");
   log("");
+
+  // Load saved progress để dashboard hiển thị ngay
+  try {
+    const progress = await loadSavedProgress();
+    if (progress.lastCompletedPage > 0 && !progress.finishedAt) {
+      log(`⚠️  Scraper đã dừng ở page ${progress.lastCompletedPage} (${progress.totalPlayersSynced} players)`);
+      log(`👉 Vào dashboard và bấm Resume để tiếp tục!`);
+    } else if (progress.lastCompletedPage > 0 && progress.finishedAt) {
+      log(`✅ Lần chạy trước đã hoàn tất (${progress.totalPlayersSynced} players)`);
+    }
+  } catch (e) {
+    log(`⚠️  Không load được progress: ${e.message}`);
+  }
 });
